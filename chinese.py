@@ -17,23 +17,36 @@ except json.JSONDecodeError:
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
 
-print("\n--- COPY EVERYTHING BELOW THIS LINE ---\n")
+
+
 
 print("// --- HSK1 DATA START ---")
-print("#include <avr/pgmspace.h>")
-print("")
-
-#print(f"{hsk_list['零']}")
 
 for i, item in enumerate(hsk_list):
     hanzi = item    
     en_translation  = hsk_list[hanzi]['translations']['en']
     
     # Use pypinyin library to convert Hanzi into numbered Pinyin
-    pinyin_list = pinyin(hanzi, style=Style.TONE3)
-    
+    pinyin_list = pinyin(hanzi, style=Style.TONE3)    
     numbered_pinyin = ' '.join([' '.join(sublist) for sublist in pinyin_list])
-    print(numbered_pinyin)
 
-    
-    
+    print(f'const char p_{i}[] PROGMEM = "{numbered_pinyin}";')
+    print(f'const char e_{i}[] PROGMEM = "{en_translation}";')
+
+print("")
+print("struct Flashcard {")
+print("  const char* pinyin;")
+print("  const char* english;")
+print("};")
+
+print("")
+print("const Flashcard deck[] PROGMEM = {")
+
+for i in range(len(hsk_list)):
+    comma = "," if i < len(hsk_list) - 1 else ""
+    print(f"  {{p_{i}, e_{i}}}{comma}")
+
+print("};")
+print("const int cardCount = sizeof(deck) / sizeof(deck[0]);")
+print("// --- HSK1 DATA END ---")
+print("")
